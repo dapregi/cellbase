@@ -206,8 +206,10 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() throws IOException {
-        if (!Files.exists(input) || !Files.isDirectory(input)) {
-            throw new IOException("Input parameter '" + input.toString() + "' does not exist or is not a directory");
+//        if (!Files.exists(input) || !Files.isDirectory(input)) {
+
+        if (!Files.exists(input)) {
+            throw new IOException("Input parameter '" + input.toString() + "' does not exist");
         }
 
         if (!Files.exists(common) || !Files.isDirectory(common)) {
@@ -268,10 +270,23 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildVariation() {
-        Path variationFolderPath = input.resolve("variation");
-        copyVersionFiles(Arrays.asList(variationFolderPath.resolve("ensemblVariationVersion.json")));
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, null, true, true, true);
-        return new VariationParser(variationFolderPath, serializer);
+
+        if ((buildCommandOptions.buildParams.get("population-frequencies") != null)
+            || (buildCommandOptions.buildParams.get("annotation")) != null) {
+            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output.getParent(),
+                    output.toString().split("\\/")[output.toString().split("\\/").length - 1].replace(".json.gz", ""), true, true, true);
+            // input must point directly to the variation_chr*.json.gz file
+            return new PostBuildVariationParser(input,
+                    buildCommandOptions.buildParams.get("annotation") != null
+                            ? Paths.get(buildCommandOptions.buildParams.get("annotation")) : null,
+                    buildCommandOptions.buildParams.get("population-frequencies") != null
+                            ? Paths.get(buildCommandOptions.buildParams.get("population-frequencies")) : null, serializer);
+        } else {
+            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, null, true, true, true);
+            Path variationFolderPath = input.resolve("variation");
+            copyVersionFiles(Arrays.asList(variationFolderPath.resolve("ensemblVariationVersion.json")));
+            return new VariationParser(variationFolderPath, serializer);
+        }
     }
 
     private CellBaseParser buildCadd() {

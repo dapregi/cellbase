@@ -144,7 +144,6 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
         public String data;
 
@@ -163,6 +162,14 @@ public class CliOptionsParser {
         @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
         public String common;
 
+        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        public Map<String, String> buildParams;
+
+        public BuildCommandOptions() {
+            buildParams = new HashMap<>();
+            buildParams.put("population-frequencies", null);
+            buildParams.put("annotation", null);
+        }
     }
 
 
